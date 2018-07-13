@@ -1,34 +1,33 @@
 import React, { Component } from "react";
-import { gql } from "apollo-boost";
 import { graphql } from "react-apollo";
 import Spinner from "react-spinkit";
-
-const bookQuery = gql`
-	{
-		books {
-			id
-			name
-			genre
-		}
-	}
-`;
+import { booksQuery } from "../queries/queries";
+import BookDetail from "./BookDetail";
 
 class BookList extends Component {
+	state = {
+		id: null
+	};
 	render() {
+		if (this.props.booksQuery.loading) {
+			return <Spinner name="ball-clip-rotate-multiple" />;
+		}
 		return (
 			<div>
-				<ul>
-					{this.props.data.loading ? (
-						<Spinner name="ball-scale-multiple" />
-					) : (
-						this.props.data.books.map(book => (
-							<li key={book.id}>{book.name}</li>
-						))
-					)}
+				<ul className="book-list">
+					{this.props.booksQuery.books.map(book => (
+						<li
+							key={book.id}
+							onClick={() => this.setState({ id: book.id })}
+						>
+							{book.name}
+						</li>
+					))}
 				</ul>
+				<BookDetail bookId={this.state.id} />
 			</div>
 		);
 	}
 }
 
-export default graphql(bookQuery)(BookList);
+export default graphql(booksQuery, { name: "booksQuery" })(BookList);
