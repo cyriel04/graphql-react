@@ -4,27 +4,27 @@ const schema = require("./schema/schema");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const app = express();
-// mongoose.connect(
+const SECRET = "fasfasfs423sdsdfsdf";
 
-//   "mongodb://username:password1@ds231501.mlab.com:31501/songs",
-//   { useNewUrlParser: true }
-// );
 app.use(cors());
 
 mongoose.connect(
-  "mongodb://username:password1@ds231501.mlab.com:31501/songs",
-  { useNewUrlParser: true }
+	"mongodb://username:password1@ds231501.mlab.com:31501/songs",
+	{ useNewUrlParser: true }
 );
 
 mongoose.connection.once("open", () => console.log("connected"));
 
 app.use(
-  "/graphql",
-  expgraph({
-    schema,
-    graphiql: true
-  })
+	"/graphql",
+	expgraph({
+		schema,
+		context: {
+			SECRET
+		},
+		graphiql: true
+	})
 );
 app.listen(4000, () => {
-  console.log("Lets go!");
+	console.log("Lets go!");
 });
