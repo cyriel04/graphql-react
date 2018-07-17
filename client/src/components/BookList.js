@@ -3,7 +3,6 @@ import { graphql } from "react-apollo";
 import Spinner from "react-spinkit";
 import { booksQuery } from "../queries/queries";
 import BookDetail from "./BookDetail";
-
 class BookList extends Component {
 	state = {
 		id: null
@@ -30,4 +29,15 @@ class BookList extends Component {
 	}
 }
 
-export default graphql(booksQuery, { name: "booksQuery" })(BookList);
+export default graphql(booksQuery, {
+	name: "booksQuery",
+	options: () => {
+		return {
+			context: {
+				headers: {
+					authorization: sessionStorage.getItem("token")
+				}
+			}
+		};
+	}
+})(BookList);

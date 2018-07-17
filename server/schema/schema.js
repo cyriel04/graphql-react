@@ -1,5 +1,7 @@
+const { Error } = require("mongoose");
 const graphql = require("graphql");
 const bcrypt = require("bcrypt");
+const jtw = require("jsonwebtoken");
 const Book = require("../models/book");
 const Author = require("../models/author");
 const User = require("../models/user");
@@ -66,10 +68,28 @@ const RootQuery = new GraphQLObjectType({
 	fields: {
 		//user
 		users: {
-			type: UserType,
-			resolve(parent, args) {
+			type: new GraphQLList(UserType),
+			resolve(parent, args, { user }) {
+				if (user) {
+					console.log(user);
+					return User.find();
+				}
+				console.log("bobo");
+				return null;
 				// return books.find(books => books.id === args.id);
-				return User.find();
+			}
+		},
+
+		user: {
+			type: UserType,
+			resolve(parent, args, { user }) {
+				if (user) {
+					console.log(user);
+					return User.findById(user.id);
+				}
+				console.log("bobo");
+				return null;
+				// return books.find(books => books.id === args.id);
 			}
 		},
 
@@ -91,8 +111,13 @@ const RootQuery = new GraphQLObjectType({
 		},
 		books: {
 			type: new GraphQLList(BookType),
-			resolve(parent, args) {
+			resolve(parent, args, { user }) {
 				// return books;
+				if (user) {
+					console.log(user);
+					return Book.find();
+				}
+				console.log("bobo");
 				return Book.find();
 			}
 		},
@@ -148,13 +173,45 @@ const Mutation = new GraphQLObjectType({
 				email: { type: new GraphQLNonNull(GraphQLString) },
 				password: { type: new GraphQLNonNull(GraphQLString) }
 			},
-			resolve(parent, args) {
+			async resolve(parent, args) {
 				let user = new User({
 					username: args.username,
 					email: args.email,
 					password: args.password
 				});
+				user.password = await bcrypt.hash(user.password, 12);
 				return user.save();
+			}
+		},
+
+		//login
+		login: {
+			type: UserType,
+			args: {
+				email: { type: new GraphQLNonNull(GraphQLString) },
+				password: { type: new GraphQLNonNull(GraphQLString) }
+			},
+			async resolve(parent, args, { SECRET }) {
+				const user = await User.findOne({ email: args.email });
+				if (!user) {
+					throw new Error("Incorrect email");
+				}
+				const valid = await bcrypt.compare(
+					args.password,
+					user.password
+				);
+				if (!valid) {
+					throw new Error("Incorrect pw");
+				}
+				const token = jtw.sign(
+					{
+						user: { id: user.id, username: user.username }
+					},
+					SECRET,
+					{ expiresIn: "1y" }
+				);
+				console.log(token);
+				return { id: token };
 			}
 		}
 	}
