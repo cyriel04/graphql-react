@@ -6,6 +6,7 @@ import { bookQuery } from "../queries/queries";
 class BookDetail extends Component {
 	gg() {
 		if (this.props.data.book) {
+			console.log(this.props.data.book);
 			return (
 				<Card
 					title={`Title: ${this.props.data.book.name}`}
@@ -13,6 +14,7 @@ class BookDetail extends Component {
 					style={{ width: 300, height: 200 }}
 				>
 					<p>{`Genre: ${this.props.data.book.name}`}</p>
+					<p>{`Date: ${this.props.data.book.createdAt}`}</p>
 					<p>{`Author: ${this.props.data.book.authors.name}`}</p>
 					<ul>
 						{this.props.data.book.authors.books.map(book => (

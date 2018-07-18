@@ -35,6 +35,7 @@ const BookType = new GraphQLObjectType({
 		id: { type: GraphQLID },
 		name: { type: GraphQLString },
 		genre: { type: GraphQLString },
+		createdAt: { type: GraphQLString },
 		authors: {
 			type: AuthorType,
 			resolve(parent, args) {
@@ -104,17 +105,26 @@ const RootQuery = new GraphQLObjectType({
 		author: {
 			type: AuthorType,
 			args: { id: { type: GraphQLID } },
-			resolve(parent, args) {
+			async resolve(parent, args) {
 				// return authors.find(authors => authors.id === args.id);
 				return Author.findById(args.id);
 			}
 		},
 		books: {
 			type: new GraphQLList(BookType),
-			resolve(parent, args, { user }) {
+			args: { cursor: { type: GraphQLString } },
+			async resolve(parent, args, { user }) {
 				// return books;
 				if (user) {
 					console.log(user);
+					const gg = await Book.find();
+					console.log(gg.length);
+					// if (!args.cursor) {
+					// 	cursor =
+					// 		Book.messages[channel.messages.length - 1]
+					// 			.createdAt;
+					// }
+
 					return Book.find();
 				}
 				console.log("bobo");
@@ -159,7 +169,8 @@ const Mutation = new GraphQLObjectType({
 				let book = new Book({
 					name: args.name,
 					genre: args.genre,
-					authorId: args.authorId
+					authorId: args.authorId,
+					createdAt: Date.now()
 				});
 				return book.save();
 			}

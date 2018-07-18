@@ -6,6 +6,7 @@ const booksQuery = gql`
 			id
 			name
 			genre
+			createdAt
 		}
 	}
 `;
@@ -38,6 +39,7 @@ const bookQuery = gql`
 			id
 			name
 			genre
+			createdAt
 			authors {
 				name
 				books {
